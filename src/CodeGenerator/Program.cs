@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -44,6 +44,7 @@ namespace CodeGenerator
             { "float&", "float*" },
             { "ImVec2[2]", "Vector2*" },
             { "char* []", "byte**" },
+            { "unsigned char[256]", "byte*" },
         };
 
         private static readonly Dictionary<string, string> s_wellKnownFieldReplacements = new Dictionary<string, string>()
@@ -1180,9 +1181,21 @@ namespace CodeGenerator
             {
                 string first = sizePart.Substring(0, plusStart);
                 string second = sizePart.Substring(plusStart, sizePart.Length - plusStart);
-                int firstVal = int.Parse(first);
-                int secondVal = int.Parse(second);
-                return firstVal + secondVal;
+                // todo: betabin，后续需要全量处理下，这边先针对case fix下
+                if (first.Equals("(0xFFFF"))
+                {
+                    return 2;
+                }
+                else if (first.Equals("1024*3"))
+                {
+                    return 3073;
+                }
+                else
+                {
+                    int firstVal = int.Parse(first);
+                    int secondVal = int.Parse(second);
+                    return firstVal + secondVal;
+                }
             }
 
             if (!int.TryParse(sizePart, out int ret))
